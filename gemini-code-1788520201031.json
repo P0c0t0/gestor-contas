@@ -1,0 +1,16 @@
+{
+  "name": "Gestor de Contas",
+  "short_name": "Contas",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "description": "Ferramenta para dividir e gerenciar as contas do mês.",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9IiM0YWRlODAiPjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0xLjQxIDE2LjA5VjIwaC0yLjgydi0xLjkyYy0yLjA4LS40Ny0zLjY2LTIuMTUtMy42Mi00LjQyaDIuOGMuMDMgMS4zOSAxLjA3IDIuNDEgMi42NCAyLjQxIDEuNzQgMCAyLjcxLS45OCAyLjcxLTIuMTYgMC0xLjM2LTEuMDktMS45NS0zLjE1LTIuNDgtMi44My0uNzMtNC4zNS0yLjEtNC4zNS00LjM1IDAtMi4wNiAxLjQ1LTMuNyAzLjQyLTQuMTdWNEgxMy40MXYxLjkyYzEuOC40MyAzLjIyIDEuOSAMy4zNiA0LjAxSDEzLjhjLS4xMy0uOTMtLjkyLTEuNjktMi4yOC0xLjY5LTEuNDUgMC0yLjUxLjg1LTIuNTEgMi4wMyAwIDEuMzggMS4yNiAxLjg4IDMuMzcgMi40NCAyLjkgLjczIDQuMTQgMi4xMSA0LjE0IDQuNCAwIDIuMjgtMS41OCAzLjc5LTMuNjkgNC4xOHoiLz48L3N2Zz4=",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

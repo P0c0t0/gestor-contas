@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Contas</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --card-bg: #1a1a1a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #9e9e9e;
+            --accent: #4ade80; /* Verde minimalista */
+            --border: #333;
+            --btn-bg: #2a2a2a;
+            --btn-hover: #3a3a3a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+
+        .title-area h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: var(--btn-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+
+        button:hover { background-color: var(--btn-hover); }
+        button.primary { border-color: var(--accent); color: var(--accent); }
+        
+        #installBtn { display: none; background-color: var(--accent); color: #000; border: none; }
+
+        /* Adaptação para monitor 34" (2560x1080) e dispositivos menores */
+        .container {
+            width: 100%;
+            max-width: 1800px; /* Permite uso inteligente do Ultrawide */
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 1024px) {
+            .container { grid-template-columns: 1fr 1fr; }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bill-item {
+            display: grid;
+            grid-template-columns: 40px 1fr 100px;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .bill-item:last-child { border-bottom: none; }
+        
+        .bill-day { color: var(--text-secondary); font-size: 0.9rem; }
+        .bill-desc { font-weight: 500; }
+        .bill-val { text-align: right; color: var(--accent); }
+
+        .summary {
+            width: 100%;
+            max-width: 1400px;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+
+        .total-val { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="title-area">
+            <h1>Contas do Mês</h1>
+        </div>
+        <div class="actions">
+            <button id="installBtn">Instalar App</button>
+            <button onclick="carregarDados()">Carregar</button>
+            <button onclick="salvarDados()" class="primary">Salvar</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-title">
+                <span>Dia 01 ao 15</span>
+                <span id="total-q1">R$ 0,00</span>
+            </div>
+            <div id="list-q1"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span>Dia 16 ao Fim do Mês</span>
+                <span id="total-q2">R$ 0,00</span>
+            </div>
+            <div id="list-q2"></div>
+        </div>
+    </div>
+
+    <div class="summary">
+        <span>Total Mensal</span>
+        <span class="total-val" id="total-geral">R$ 0,00</span>
+    </div>
+
+    <script>
+        // Dados extraídos da imagem
+        const defaultData = [
+            { dia: 5, desc: "TERRENO", valor: 262.00 },
+            { dia: 5, desc: "ALUGUEL", valor: 100.00 },
+            { dia: 12, desc: "PLANO NUCEL", valor: 45.00 },
+            { dia: 15, desc: "LINKCE", valor: 119.90 },
+            { dia: 25, desc: "ENERGIA", valor: 200.00 },
+            { dia: 26, desc: "RASTREAMENTO CARRO E MOTO / SEGURO", valor: 250.00 }
+        ];
+
+        let contas = [];
+
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function renderizar() {
+            const listQ1 = document.getElementById('list-q1');
+            const listQ2 = document.getElementById('list-q2');
+            
+            listQ1.innerHTML = ''; listQ2.innerHTML = '';
+            let totalQ1 = 0, totalQ2 = 0;
+
+            contas.sort((a, b) => a.dia - b.dia).forEach(conta => {
+                const itemHTML = `
+                    <div class="bill-item">
+                        <div class="bill-day">Dia ${String(conta.dia).padStart(2, '0')}</div>
+                        <div class="bill-desc">${conta.desc}</div>
+                        <div class="bill-val">${formatarMoeda(conta.valor)}</div>
+                    </div>
+                `;
+
+                if (conta.dia <= 15) {
+                    listQ1.innerHTML += itemHTML;
+                    totalQ1 += conta.valor;
+                } else {
+                    listQ2.innerHTML += itemHTML;
+                    totalQ2 += conta.valor;
+                }
+            });
+
+            document.getElementById('total-q1').innerText = formatarMoeda(totalQ1);
+            document.getElementById('total-q2').innerText = formatarMoeda(totalQ2);
+            document.getElementById('total-geral').innerText = formatarMoeda(totalQ1 + totalQ2);
+        }
+
+        function salvarDados() {
+            localStorage.setItem('contasMes', JSON.stringify(contas));
+            alert('Dados salvos com sucesso!');
+        }
+
+        function carregarDados() {
+            const dadosSalvos = localStorage.getItem('contasMes');
+            if (dadosSalvos) {
+                contas = JSON.parse(dadosSalvos);
+                renderizar();
+            } else {
+                alert('Nenhum dado salvo encontrado. Carregando padrão.');
+                contas = [...defaultData];
+                renderizar();
+            }
+        }
+
+        // Inicializa com os dados padrão se não houver salvos
+        if(localStorage.getItem('contasMes')) {
+            carregarDados();
+        } else {
+            contas = [...defaultData];
+            renderizar();
+        }
+
+        // --- LÓGICA DE INSTALAÇÃO PWA ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').style.display = 'block';
+        });
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('installBtn').style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
